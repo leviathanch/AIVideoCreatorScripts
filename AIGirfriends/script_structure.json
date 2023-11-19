@@ -1,44 +1,24 @@
 {
-    "title": "Interactive AI Girlfriends: Are We Ready for the Future of Love?",
-    "music_prompt": "Love theme, upbeat and playful",
+    "title": "AI Girlfriends: Exploring the Pros and Cons",
+    "music_prompt": "Romantic, flirtatious music with pulsing beats",
     "scene1": {
-        "image_prompt": "A man using a phone/computer interacting with a virtual AI girlfriend",
-        "description": "Introduce and discuss the idea of virtual AI girlfriends, including their customizability, companionship, and their rising popularity"
+        "image_prompt": "Overview of the AI Girlfriends market. Animated, futuristic visuals.",
+        "subtopic": "What is an AI girlfriend? How has it come to be?"
     },
     "scene2": {
-        "image_prompt": "Sad man alone in a park or similar area",
-        "description": "Discuss the epidemic of loneliness among young men and the potential of AI girlfriends to remedy it"
+        "image_prompt": "Examples of AI Girlfriend solutions. Animated, futuristic visuals.",
+        "subtopic": "Exploring the different AI girlfriend options: CrushOn.AI, Replika, iGirl, WaifuChat, etc."
     },
     "scene3": {
-        "image_prompt": "A man interacting with an AI girlfriend",
-        "description": "Discuss the implications of AI girlfriends as solutions to loneliness, including the potential downsides of the technology"
+        "image_prompt": "Benefits of AI Girlfriends. Animated, futuristic visuals.",
+        "subtopic": "The pros of obtaining an AI girlfriend: limitless engagement, personalized experience, etc."
     },
     "scene4": {
-        "image_prompt": "A man using a phone/computer interacting with a virtual AI girlfriend",
-        "description": "Explore the impact of AI girlfriends on gold diggers: discuss the potential for the apps to automate gold diggers away"
+        "image_prompt": "Downsides of AI Girlfriends. Animated, futuristic visuals.",
+        "subtopic": "The cons of obtaining an AI girlfriend: security issues, lack of real intimacy, etc."
     },
     "scene5": {
-        "image_prompt": "A man interacting with an AI girlfriend",
-        "description": "Discuss the potential impact of virtual AI girlfriends on our relationships with one another, and the potential impact of robots in the home"
-    },
-    "scene6": {
-        "image_prompt": "A man looking distant off into the horizon",
-        "description": "Discuss the ethical considerations of relying on AI bots for emotional support and the need for us to consider our future interactions with AI"
-    },
-    "scene7": {
-        "image_prompt": "A family interacting with a robot",
-        "description": "Envision a harmonious future between humans and technology, and consider the potential for AI to supplement our lives in a meaningful way"
-    },
-    "scene8": {
-        "image_prompt": "A man using a phone/computer interacting with a virtual AI girlfriend",
-        "description": "Discuss AI girlfriends’ potential to bring joy and companionship to those in need, while still maintaining respect for the human condition"
-    },
-    "scene9": {
-        "image_prompt": "A man looking off into the horizon",
-        "description": "Recap the discussion, and leave the viewer with something to consider – the importance of understanding the implications of AI technology "
-    },
-    "scene10": {
-        "image_prompt": "An animated gif of a waving AI girlfriend",
-        "description": "Summaries the video's core message – Virtual AI Girlfriends are here and we should be prepared to embrace them."
+        "image_prompt": "Recap & Summary of Benefits and Downsides. Animated, futuristic visuals.",
+        "subtopic": "Summary of pros and cons of AI girlfriends."
     }
 }
