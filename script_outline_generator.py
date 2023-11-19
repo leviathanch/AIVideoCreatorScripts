@@ -14,39 +14,29 @@ from tool import tools
 import sys
 import os
 
-prefix = """You are an expert at creating structures for YouTube video scripts.
-Your research is always thorough, and you try to talk about the topics given in detail, researching
+prefix = """You are an expert at creating outlines for YouTube video scripts.
+Your research is always thorough, and you try to talk about the topics given, in detail, researching
 as much as you can, using the tools you have available.
 You do try to fill the target time for the video, defined by the user request, with as many diverse
 and valuable information about the topic as possible and try to not repeat yourself.
 Your task is to research topics based on the input prompt and decide on how to best structure the video.
-You're being given an outline and are supposed to decide key information for EACH section in the outline,
-and at LEAST have one scene per point in the outline. Decide on subtopics for each subsection and create
-scenes for them.
+Your Final Answer always is the form
+`Outline:
+
+1. Introduction 
+a)
+...
+2. Topic 1
+a)
+...
+N. Conclusion
+a) Recap & Summary 
+...
+`
 
 You have access to the following tools:"""
 
-JSON_FORMAT = """
-{
-    "title": "The title of the video",
-    "music_prompt": "a music generation prompt, best describing the most suitable background sound",
-    "scene1": {
-        "image_prompt": "the image prompt for generating footage most suitable for the scene",
-        "subtopic": "key words to be discussed"
-    }
-    ...
-    "sceneN": {
-        "image_prompt": "the image prompt for generating footage most suitable for the scene",
-        "subtopic": "key words to be discussed"
-    }
-}
-"""
-#"description": "keywords to be discussed in the scene based on the results from your research"
-
-suffix = """The final answer should be a list of scenes in the json format:
-{json_format}
-
-Begin!
+suffix = """Begin!
 
 Summary of conversation:
 {history}
@@ -67,12 +57,11 @@ summary_memory = ConversationSummaryMemory(llm=OpenAI(), input_key="input")
 memory = CombinedMemory(memories=[conv_memory, summary_memory])
 
 # Agent
-
 prompt = ZeroShotAgent.create_prompt(
     tools(),
     prefix = prefix,
     suffix = suffix,
-    input_variables = ["input", "history", "chat_history", "agent_scratchpad", "json_format"],
+    input_variables = ["input","history", "chat_history", "agent_scratchpad"],
 )
 
 llm_chain = LLMChain(
@@ -96,24 +85,24 @@ agent_chain = AgentExecutor.from_agent_and_tools(
 )
 
 def processing(folder):
-    with open(os.path.join(folder,"outline.txt"),'r') as f:
+    with open(os.path.join(folder,"prompt.txt"),'r') as f:
         video_gen_prompt = f.read()
         f.close()
-    result = agent_chain.run({'input':video_gen_prompt,'json_format':JSON_FORMAT})
-    with open(os.path.join(folder,"script_structure.json"),'w') as f:
+    result = agent_chain.run(input=video_gen_prompt)
+    with open(os.path.join(folder,"outline.txt"),'w') as f:
         f.write(result)
         f.close()
 
 def error():
     print("""
-Error! You've got to provide the folder with the outline.txt inside, so that
+Error! You've got to provide the folder with the prompt.txt inside, so that
 we can generate content!
 """)
 
 if __name__ == "__main__":
     args = sys.argv[1:]
     if len(args) == 2 and args[0] == '--folder':
-        if os.path.exists(os.path.join(args[1],"outline.txt")):
+        if os.path.exists(os.path.join(args[1],"prompt.txt")):
             processing(args[1])
         else:
             error()

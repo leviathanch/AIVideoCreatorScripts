@@ -1,11 +1,17 @@
 from langchain.agents import AgentType, AgentExecutor, ZeroShotAgent
-from langchain.agents import initialize_agent, Tool
+from langchain.agents import initialize_agent
 from langchain.tools import DuckDuckGoSearchRun
 from langchain.chains import LLMChain
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
 from langchain.prompts import PromptTemplate
+from langchain.memory import (
+    CombinedMemory,
+    ConversationBufferMemory,
+    ConversationSummaryMemory,
+)
+
+from tool import tools
 
 import json
 import sys
@@ -20,29 +26,32 @@ You have access to the following tools:"""
 
 suffix = """Begin!
 
+Summary of conversation:
+{history}
+Current conversation:
 {chat_history}
 The title of the video is \"{title}\"
 The description of the scene is \"{input}\"
 Thought:{agent_scratchpad}
 """
 
-tools = [
-    Tool(
-        name = "Search",
-        func = DuckDuckGoSearchRun(),
-        description = "useful for when you need to answer questions about current events, data. You should ask targeted questions.",
-        verbose = True,
-    ),
-]
-
-prompt = ZeroShotAgent.create_prompt(
-    tools,
-    prefix = prefix,
-    suffix = suffix,
-    input_variables = ["input", "chat_history", "agent_scratchpad", "title"],
+# Memory
+conv_memory = ConversationBufferMemory(
+    memory_key = "chat_history",
+    input_key = 'input'
 )
 
-memory = ConversationBufferMemory(memory_key="chat_history", input_key='input')
+summary_memory = ConversationSummaryMemory(llm=OpenAI(), input_key="input")
+# Combined
+memory = CombinedMemory(memories=[conv_memory, summary_memory])
+
+# Agent
+prompt = ZeroShotAgent.create_prompt(
+    tools(),
+    prefix = prefix,
+    suffix = suffix,
+    input_variables = ["input", "history", "chat_history", "agent_scratchpad", "title"],
+)
 
 llm_chain = LLMChain(
     llm = OpenAI(temperature=0.9, max_tokens=512),
@@ -51,13 +60,13 @@ llm_chain = LLMChain(
 
 agent = ZeroShotAgent(
     llm_chain = llm_chain,
-    tools =tools,
+    tools = tools(),
     verbose = True
 )
 
 agent_chain = AgentExecutor.from_agent_and_tools(
     agent = agent,
-    tools = tools,
+    tools = tools(),
     verbose = True,
     memory = memory,
     max_iterations=20,
@@ -91,11 +100,12 @@ def process_json(folder_name):
     for i in range(100):
         try:
             scene = jsdata['scene'+str(i+1)]
-            newjsdata['scene'+str(i+1)]={}
-            newjsdata['scene'+str(i+1)]['image_prompt'] = scene['image_prompt']
-            newjsdata['scene'+str(i+1)]['text'] = text_it_out(scene['description'], video_title)
         except:
             break
+
+        newjsdata['scene'+str(i+1)]={}
+        newjsdata['scene'+str(i+1)]['image_prompt'] = scene['image_prompt']
+        newjsdata['scene'+str(i+1)]['text'] = text_it_out(scene['subtopic'], video_title)
 
     newjsdata['outro'] = {}
     newjsdata['outro']['image_prompt'] = scene['image_prompt']

@@ -1,11 +1,9 @@
 from langchain.agents import AgentType, AgentExecutor, ZeroShotAgent
 from langchain.agents import initialize_agent, Tool
-from langchain.tools import DuckDuckGoSearchRun
 from langchain.chains import LLMChain
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
-from langchain import PromptTemplate
+from langchain.prompts import PromptTemplate
 
 import json
 import sys
@@ -21,83 +19,29 @@ LAUGHTER, LAUGHS, SIGHS, GASPS, CLEARS_THROAT
 — or ... for hesitations.
 
 The data retrieval backend already has done all the work of researching, and you simply have to rephrase
-its outputs in your own words.
+its outputs in your own words. Try to use at least as many words as the input provided, if not even more.
+Feel free to elaborate on your stances in more detail.
 
-The title of the video is \"{title}\"
-The description of the scene is \"{description}\"
+The title of the video is \"{video_title}\"
+The description of the image shown is \"{image_prompt}\"
 Your last output was \"{last_output}\"
-What you've got:
-{input}
+Text from the backend is \"{input}\"
 
 Your own wording:"""
 
 annita_prompt = PromptTemplate.from_template(annita_template)
 
-prefix = """You are an expert in researching information on the internet, in order to
-make sure, that everything in the YouTube videos we produce is factual and correct.
-Your task is, to research information about the scene and title for the YouTube video
-we're making, so that someone can talk between one or two minutes.
-
-You have access to the following tools:"""
-
-suffix = """Begin!
-
-{chat_history}
-The title of the video is \"{title}\"
-The description of the scene is \"{input}\"
-Thought:{agent_scratchpad}
-"""
-
-tools = [
-    Tool(
-        name = "Search",
-        func = DuckDuckGoSearchRun(),
-        description = "useful for when you need to answer questions about current events, data. You should ask targeted questions.",
-        verbose = True,
-    ),
-]
-
-prompt = ZeroShotAgent.create_prompt(
-    tools,
-    prefix = prefix,
-    suffix = suffix,
-    input_variables = ["input", "chat_history", "agent_scratchpad", "title"],
-)
-
-memory = ConversationBufferMemory(memory_key="chat_history", input_key='input')
-
-llm_chain = LLMChain(
-    llm = OpenAI(temperature=0.0, max_tokens=1024),
-    prompt = prompt
-)
-
-agent = ZeroShotAgent(
-    llm_chain = llm_chain,
-    tools =tools,
-    verbose = True
-)
-
-agent_chain = AgentExecutor.from_agent_and_tools(
-    agent = agent,
-    tools = tools,
-    verbose = True,
-    memory = memory
-)
-
 annitta_chain = OpenAI(temperature=0.9, max_tokens=1024)
 
-def text_it_out(description, title, last_output):
-    agent_text = agent_chain.run({
-        'input':description,
-        'title':title,
-    })
+def text_it_out(title, image_prompt, text, last_output):
     prompt = annita_prompt.format(
-        input=agent_text,
-        description=description,
-        title=title,
-        last_output=last_output
+        input = text,
+        video_title = title,
+        last_output = last_output,
+        image_prompt = image_prompt
     )
-    return annitta_chain(prompt)
+    ret = annitta_chain(prompt)
+    return ret
 
 def process_json(folder_name):
     try:
@@ -117,20 +61,20 @@ def process_json(folder_name):
     newjsdata['intro'] = {}
     scene = jsdata['scene1']
     newjsdata['intro']['image_prompt'] = scene['image_prompt']
-    last_output = text_it_out("Introduction: Introduce the viewer to the topic", video_title, last_output)
+    last_output = text_it_out(video_title, scene['image_prompt'], "Introduction: Introduce the viewer to the topic", last_output)
     newjsdata['intro']['text'] = last_output
 
     for i in range(100):
         try:
             scene = jsdata['scene'+str(i+1)]
-            last_output = text_it_out(scene['description'], video_title, last_output)
+            last_output = text_it_out(video_title, scene['image_prompt'], scene['subtopic'],  last_output)
             newjsdata['scene'+str(i+1)]={}
             newjsdata['scene'+str(i+1)]['image_prompt'] = scene['image_prompt']
             newjsdata['scene'+str(i+1)]['text'] = last_output
         except:
             break
 
-    last_output = text_it_out("Outro: Write something for finishing the video, like asking them to like, share and subscribe.", video_title, last_output)
+    last_output = text_it_out(video_title, scene['image_prompt'], "Outro: Write something for finishing the video, like asking them to like, share and subscribe.", last_output)
     newjsdata['outro'] = {}
     newjsdata['outro']['image_prompt'] = scene['image_prompt']
     newjsdata['outro']['text'] = last_output
