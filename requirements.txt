@@ -1,4 +1,5 @@
 suno-bark @ git+https://github.com/serp-ai/bark-with-voice-clone
+ffmpeg
 scipy
 IPython
 nltk
