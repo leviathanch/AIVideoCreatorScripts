@@ -1,4 +1,4 @@
-suno-bark @ git+https://github.com/leviathanch/bark
+suno-bark @ https://github.com/serp-ai/bark-with-voice-clone
 scipy
 IPython
 nltk
