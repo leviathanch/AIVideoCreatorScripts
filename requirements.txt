@@ -1,0 +1,4 @@
+bark @ git+https://github.com/leviathanch/bark
+scipy
+IPython
+nltk
