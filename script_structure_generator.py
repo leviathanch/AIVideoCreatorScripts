@@ -6,14 +6,14 @@ from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 
-video_gen_prompt = """
-Make a 20 minute long video about how virtual AI girlfriends like Replika have automated gold diggers away,
-because they also can just look cute and ask for money, in that case subscription fees, but without
-the risk of divorce. Talk about what the future impacts might be, as soon as robots also can do the chores.
-It should have at least 10 scenes.
-"""
+import sys
+import os
 
 prefix = """You are an expert at creating structures for YouTube video scripts.
+Your research is always thorough, and you try to talk about the topics given in detail, researching
+as much as you can, using the tools you have available.
+You do try to fill the target time for the video, defined by the user request, with as many diverse
+and valuable information about the topic as possible and try to not repeat yourself.
 Your task is to research topics based on the input prompt and decide on how to best structure the video.
 You have access to the following tools:"""
 
@@ -68,7 +68,7 @@ llm_chain = LLMChain(
 
 agent = ZeroShotAgent(
     llm_chain = llm_chain,
-    tools =tools,
+    tools = tools,
     verbose = True
 )
 
@@ -76,10 +76,33 @@ agent_chain = AgentExecutor.from_agent_and_tools(
     agent = agent,
     tools = tools,
     verbose = True,
-    memory = memory
+    memory = memory,
+    max_iterations = 20,
 )
 
-result = agent_chain.run({'input':video_gen_prompt,'json_format':JSON_FORMAT})
-with open("script_structure.json",'w') as f:
-	f.write(result)
-	f.close()
+def processing(folder):
+    with open(os.path.join(folder,"prompt.txt"),'r') as f:
+        video_gen_prompt = f.read()
+        f.close()
+    result = agent_chain.run({'input':video_gen_prompt,'json_format':JSON_FORMAT})
+    with open(os.path.join(folder,"script_structure.json"),'w') as f:
+        f.write(result)
+        f.close()
+
+def error():
+    print("""
+Error! You've got to provide the folder with the prompt.txt inside, so that
+we can generate content!
+""")
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    if len(args) == 2 and args[0] == '--folder':
+        if os.path.exists(os.path.join(args[1],"prompt.txt")):
+            processing(args[1])
+        else:
+            error()
+    else:
+        error()
+
+
